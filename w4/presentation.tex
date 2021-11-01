@@ -5,6 +5,7 @@
 
 \usepackage{latexsym}
 \usepackage{amsmath,amssymb}
+\usefonttheme{professionalfonts}
 \usepackage{mathtools}
 \usepackage{color,xcolor}
 \usepackage{graphicx}
@@ -124,7 +125,7 @@
 		% circles, rectanges, rounded, inmargin
 	}
 	% 设置 block 颜色
-	\setbeamercolor{block title}{bg=red!30,fg=white}
+	\setbeamercolor{block title}{bg=blue!80,fg=white}
 	
 	\newcommand{\reditem}[1]{\setbeamercolor{item}{fg=red}\item #1}
 	
@@ -314,7 +315,49 @@ diffusion based feature aggregation:
 		 \begin{equation}
 		 	\text{AttDiff}(\mathcal{G}, \mathbf{H}^{(l)}, \Theta) = \mathcal{A}\mathbf{H}^{(l)}
 		 \end{equation}
-	 	Approximate $\mathcal{A}\mathbf{H}^{(l)}$ by defining a sequence which converges to the true value of $\mathcal{A}\mathbf{H}^{(l)}$ is $Z^{(K)}$ when $K \rightarrow \infty$: $Z^{(0)} = \mathbf{H}^{(l)}$,  $Z^{(k+1)} = (1-\alpha)\mathcal{A}Z^{(k)} + \alpha Z^{(0)}$
+		\end{frame}
+		\begin{frame}{Multi-hop Attention Diffusion}
+			Approximate $\mathcal{A}\mathbf{H}^{(l)}$ by defining a sequence which converges to the true value of $\mathcal{A}\mathbf{H}^{(l)}$ is $Z^{(K)}$ when $K \rightarrow \infty$: 
+			\begin{gather}
+				Z^{(0)} = \mathbf{H}^{(l)} \\
+				Z^{(k+1)} = (1-\alpha)\mathcal{A}Z^{(k)} + \alpha Z^{(0)}
+			\end{gather}
+			\begin{block}{Proposition 1}
+				We have
+				\begin{equation}
+					\text{lim}_{K \rightarrow \infty}Z^{(K)} = \mathcal{A}\mathbf{H}^l
+				\end{equation}
+			\end{block}
+			Using the above approximation, the complexity of attention computation with diffusion is still $O(|E|)$, with a constant factor corresponding to the number of hops $K$
+		\end{frame}
+		\begin{frame}{Spectral Properties of Graph Attention Diffusion}
+			In point of view that the attention matrix $\mathbf{A}$ of GAT and $\mathcal{A}$ of MAGNA as weighted adjacency matrices, and apply Graph Fourier Transform and spectral analysis
+			
+			We have the normalized graph Laplacians are $\hat{\mathbf{L}}_{sym} = \mathbf{I} - \mathcal{A}$ and $\mathbf{L}_{sym} = \mathbf{I} - \mathbf{A}$
+			\begin{block}{Proposition 2}
+				Let $\hat{\lambda}_i^g$ and $\lambda_i^g$ be i-th eigeinvalues of $\hat{\mathbf{L}}_{sym}$ and $\mathbf{L}_{sym}$
+				\begin{equation}
+					\frac{\hat{\lambda}_i^g}{\lambda_i^g} = \frac{1-\frac{\alpha}{1-(1-\alpha)(1-\lambda_i^g)}}{\lambda_i^g} = \frac{1}{\frac{\alpha}{1-\alpha}+\lambda_i^g}
+				\end{equation}
+			\end{block}
+			When $\lambda_i^g$ is small such that $\frac{\alpha}{1-\alpha}+\lambda_i^g < 1$, then $\hat{\lambda}_i^g > \lambda_i^g$, indicates that the
+			use of $\mathcal{A}$ increases smaller eigenvalues and decreases larger
+			eigenvalues.
+		\end{frame}
+		\begin{frame}{Personalized PageRank Meets Graph Attention Diffusion}
+			In point of view that the attention matrix $\mathbf{A}$ as a random walk matrix on graph $\mathcal{G}$
+			
+			Perform Personalized PageRank with $\alpha \in (0, 1]$ with transition matrix $\mathbf{A}$
+			\begin{equation}
+				\mathbf{A}_{ppr} = \alpha(\mathbf{I} - (1-\alpha)\mathbf{A})^{-1}
+			\end{equation}
+			Using series expansion for the matrix inverse
+			\begin{equation}
+				\mathbf{A}_{ppr} = \alpha\sum_{i=0}^{\infty}(1-\alpha)^i\mathbf{A}^i = \sum_{i=0}^{\infty}\alpha(1-\alpha)^i\mathbf{A}^i 
+			\end{equation}
+			\begin{block}{Proposition 3}
+				Graph attention diffusion defines a Personaized PageRank with parameter with $\alpha \in (0, 1]$ on $\mathcal{G}$ with transition matrix $\mathbf{A}$, i.e., $\mathcal{A} = \mathbf{A}_{ppr}$
+			\end{block}
 		\end{frame}
 		\subsection{Multi-hop Attention based GNN Architecture}
 		\begin{frame}{Multi-head Graph Attention Diffusion Layer}
@@ -359,12 +402,18 @@ diffusion based feature aggregation:
 				\item The encoder applies the proposed MAGNA model to compute the entity embeddings
 				\item The decoder makes link prediction given the embeddings
 			\end{itemize}
+			Decoder's scoring function
+			\begin{equation}
+				f_r(h, t) = h^T\text{diag}(r)t
+			\end{equation}
 		\end{frame}
 		\section{Conclusion \& Improvement ideas}
 		\begin{frame}{Conclusion \& Improvement ideas}
 			\textbf{Conclusion} Multi-hop Attention Graph Neural Network, MAGNA, has two main advantages:
 			\begin{itemize}
-				\item Captureslong-range interactions between nodes that are not directlyconnected but may be multiple hops away.
+				\item Captures
+long-range interactions between nodes that are not directly
+connected but may be multiple hops away.
 				\item The attention computation is context-dependent.
 			\end{itemize}
 			\textbf{Improvement ideas}
@@ -377,5 +426,5 @@ diffusion based feature aggregation:
 			\nocite{*}
 			\bibliography{references}\newpage\cleardoublepage
 			\bibliographystyle{plain}
-		\end{frame}
+		\end{frame}	
 	\end{document}
